@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to right, #11998e, #38ef7d);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            color: white;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            outline: none;
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        button {
+            padding: 12px 25px;
+            background-color: #19cf0c;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            height: fit-content;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #00bc48;
+        }
+
+        #weatherInfo {
+            margin-top: 30px;
+            font-size: 1.3rem;
+        }
+
+        #errorMsg {
+            margin-top: 10px;
+            color: #ff4e4e;
+            font-size: 1rem;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        p {
+            text-align: center;
+            font-family: 'Trebuchet MS', Arial, sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Weather App</h1>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="cityname" placeholder="Enter City Name">
+            <button id="searchBtn">Search</button>
+        </div>
+        <div id="weatherInfo"></div>
+        <div id="errorMsg"></div>
+    </div>
+
+    <script>
+        document.getElementById('searchBtn').addEventListener('click', function () {
+            const city = document.getElementById('cityname').value;
+            const weatherInfo = document.getElementById('weatherInfo');
+            const errorMsg = document.getElementById('errorMsg');
+
+            if (!city) {
+                errorMsg.textContent = 'City name cannot be blank. Please enter a valid city';
+                weatherInfo.textContent = '';
+                return;
+            }
+
+            const xhr = new XMLHttpRequest();
+            const apiKey = '3ebb450086d961f53c4f882714dd90db';
+            const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+
+            xhr.open('GET', apiUrl, true);
+
+            xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    const data = JSON.parse(xhr.responseText);
+                    if (data.cod === 200) {
+                        const temp = data.main.temp;
+                        const humidity = data.main.humidity;
+                        const windSpeed = data.wind.speed;
+                        const weatherDescription = data.weather[0].description;
+
+                        const timezoneOffset = data.timezone / 3600;
+                        const timezone = `UTC${timezoneOffset >= 0 ? '+' : ''}${timezoneOffset}`;
+
+                        const weather = `
+                            <h2>Weather in ${data.name}</h2>
+                            <p>Temperature => ${temp}°C</p>
+                            <p>Humidity => ${humidity}%</p>
+                            <p>Wind Speed => ${windSpeed} m/s</p>
+                            <p>Timezone => ${timezone}</p>
+                            <p>Condition => ${weatherDescription}</p>
+                        `;
+                        weatherInfo.innerHTML = weather;
+                        errorMsg.textContent = '';
+                    } else {
+                        weatherInfo.textContent = '';
+                        errorMsg.textContent = 'City not found.';
+                    }
+                } else {
+                    weatherInfo.textContent = '';
+                    errorMsg.textContent = 'Unable to fetch weather data at the moment. Please check your connection.';
+                }
+            };
+
+            xhr.onerror = function () {
+                weatherInfo.textContent = '';
+                errorMsg.textContent = 'Unable to fetch weather data at the moment. Please check your connection.';
+            };
+
+            xhr.send();
+        });
+    </script>
+</body>
+
+</html>
